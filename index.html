@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Budget Tracker</title>
+<title>PocketWise</title>
 <style>
   :root{
     --bg:#f7f7f8;
@@ -17,6 +17,7 @@
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
   *{box-sizing:border-box}
+  
   body{
     margin:0;
     background:var(--bg);
@@ -25,15 +26,26 @@
     -moz-osx-font-smoothing:grayscale;
     padding:28px;
     display:flex;
-    align-items:flex-start;
-    justify-content:center;
+    /* Changed to column to stack title above container */
+    flex-direction: column; 
+    align-items:center; 
+    justify-content:flex-start;
     min-height:100vh;
     gap:20px;
   }
 
+  /* New Title Style */
+  .main-brand {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
   .container{
     width:980px;
-    max-width:calc(100% - 48px);
+    max-width:100%;
     display:grid;
     grid-template-columns:360px 1fr;
     gap:20px;
@@ -163,8 +175,10 @@
 </style>
 </head>
 <body>
+
+  <div class="main-brand">PocketWise</div>
+
   <div class="container">
-    <!-- Left: input -->
     <div class="panel">
       <h1>Budget Tracker</h1>
       <div class="muted">Quick add income or expense</div>
@@ -206,7 +220,6 @@
 
     </div>
 
-    <!-- Right: summary + logs -->
     <div class="summary">
       <div class="summary-grid">
         <div class="card" style="flex:1">
@@ -236,8 +249,7 @@
       <div class="card" style="min-height:160px">
         <div class="sm" style="margin-bottom:8px">Category breakdown</div>
         <div id="bars" class="bars">
-          <!-- category bars injected here -->
-        </div>
+          </div>
       </div>
 
       <div class="card" style="padding:12px">
@@ -250,8 +262,7 @@
         </div>
 
         <div id="logs" class="logs">
-          <!-- entries -->
-        </div>
+          </div>
       </div>
 
     </div>
@@ -411,62 +422,4 @@ function render(){
       row.innerHTML = `
         <div class="bar-name">${escapeHtml(name)}</div>
         <div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:${color}"></div></div>
-        <div style="width:78px;text-align:right;font-weight:700">${formatCurrency(val)}</div>
-      `;
-      barsEl.appendChild(row);
-    });
-  }
-
-  // logs (newest first)
-  const sorted = filtered.slice().sort((a,b)=> new Date(b.dateISO) - new Date(a.dateISO));
-  logsEl.innerHTML = '';
-  sorted.forEach(e=>{
-    const ent = document.createElement('div');
-    ent.className = 'entry';
-    ent.innerHTML = `
-      <div class="left">
-        <div class="pill ${e.type === 'income' ? 'in' : 'out'}">${e.type === 'income' ? '+' : '-'}</div>
-        <div style="display:flex;flex-direction:column">
-          <div style="font-weight:700">${formatCurrency(e.amount)}</div>
-          <div class="cat">${escapeHtml(e.category)} • ${e.dateISO}</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <button class="btn" data-id="${e.id}" style="background:#fff;color:var(--muted);border:1px solid #eee;padding:6px 8px">Delete</button>
-      </div>
-    `;
-    logsEl.appendChild(ent);
-    ent.querySelector('button').onclick = (ev)=>{
-      const id = ev.currentTarget.getAttribute('data-id');
-      if(confirm('Delete this entry?')) removeEntry(id);
-    };
-  });
-
-  logCountEl.textContent = `${sorted.length} entries`;
-}
-
-// utility: color from string (keeps minimal palette)
-function getColorByName(name){
-  const palette = ['#60a5fa','#f97316','#ef4444','#f59e0b','#10b981','#7c3aed','#06b6d4','#f472b6'];
-  let h = 0;
-  for(let i=0;i<name.length;i++) h = (h<<5) - h + name.charCodeAt(i);
-  const idx = Math.abs(h) % palette.length;
-  return palette[idx];
-}
-
-function escapeHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// respond to month change
-monthInput.onchange = render;
-
-// initial render
-render();
-
-</script>
-</body>
-</html>
-
-
-
+        <div style="width:78px;text
