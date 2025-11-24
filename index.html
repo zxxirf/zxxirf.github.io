@@ -26,26 +26,25 @@
     -moz-osx-font-smoothing:grayscale;
     padding:28px;
     display:flex;
-    /* Changed to column to stack title above container */
-    flex-direction: column; 
-    align-items:center; 
+    /* Changed to column to stack the new title above the app */
+    flex-direction: column;
+    align-items:center;
     justify-content:flex-start;
     min-height:100vh;
     gap:20px;
   }
 
-  /* New Title Style */
-  .main-brand {
+  /* Style for the new title */
+  .app-title {
     font-size: 32px;
     font-weight: 800;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.03em;
     color: var(--accent);
-    margin-bottom: 10px;
   }
 
   .container{
     width:980px;
-    max-width:100%;
+    max-width:calc(100% - 48px);
     display:grid;
     grid-template-columns:360px 1fr;
     gap:20px;
@@ -175,8 +174,8 @@
 </style>
 </head>
 <body>
-
-  <div class="main-brand">PocketWise</div>
+  
+  <div class="app-title">PocketWise</div>
 
   <div class="container">
     <div class="panel">
@@ -258,7 +257,6 @@
             <div class="sm">Daily logs</div>
             <div class="small-muted" id="log-count">0 entries</div>
           </div>
-          <div class="sm">Newest on top</div>
         </div>
 
         <div id="logs" class="logs">
@@ -422,4 +420,59 @@ function render(){
       row.innerHTML = `
         <div class="bar-name">${escapeHtml(name)}</div>
         <div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:${color}"></div></div>
-        <div style="width:78px;text
+        <div style="width:78px;text-align:right;font-weight:700">${formatCurrency(val)}</div>
+      `;
+      barsEl.appendChild(row);
+    });
+  }
+
+  // logs (newest first)
+  const sorted = filtered.slice().sort((a,b)=> new Date(b.dateISO) - new Date(a.dateISO));
+  logsEl.innerHTML = '';
+  sorted.forEach(e=>{
+    const ent = document.createElement('div');
+    ent.className = 'entry';
+    ent.innerHTML = `
+      <div class="left">
+        <div class="pill ${e.type === 'income' ? 'in' : 'out'}">${e.type === 'income' ? '+' : '-'}</div>
+        <div style="display:flex;flex-direction:column">
+          <div style="font-weight:700">${formatCurrency(e.amount)}</div>
+          <div class="cat">${escapeHtml(e.category)} • ${e.dateISO}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" data-id="${e.id}" style="background:#fff;color:var(--muted);border:1px solid #eee;padding:6px 8px">Delete</button>
+      </div>
+    `;
+    logsEl.appendChild(ent);
+    ent.querySelector('button').onclick = (ev)=>{
+      const id = ev.currentTarget.getAttribute('data-id');
+      if(confirm('Delete this entry?')) removeEntry(id);
+    };
+  });
+
+  logCountEl.textContent = `${sorted.length} entries`;
+}
+
+// utility: color from string (keeps minimal palette)
+function getColorByName(name){
+  const palette = ['#60a5fa','#f97316','#ef4444','#f59e0b','#10b981','#7c3aed','#06b6d4','#f472b6'];
+  let h = 0;
+  for(let i=0;i<name.length;i++) h = (h<<5) - h + name.charCodeAt(i);
+  const idx = Math.abs(h) % palette.length;
+  return palette[idx];
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// respond to month change
+monthInput.onchange = render;
+
+// initial render
+render();
+
+</script>
+</body>
+</html>
